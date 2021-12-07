@@ -10,14 +10,14 @@ echo "YYC-DHCP.instantsoft.ca" > $HNAME
 #yum update -y
 
 yum install dhcp -y
+mv "$IP_DIR" "$IP_DIR.bak"
+    rm $IP_DIR
 # CONFIGURING IP SHIT
 up_config () {
     local KEY ="$1"
     local NEWVALUE="$2"
-    local FILE=$IP_DIR
-    mv "$FILE" "$FILE.bak"
-    cat "$FILE.bak" | grep -v "^${KEY}${'='}" > "$FILE"
-    echo "${KEY}${'='}${NEWVALUE}" >> "$FILE"
+    cat "$IP_DIR.bak" | grep -v "^${KEY}${'='}" >> "$IP_DIR"
+    echo "${KEY}${'='}${NEWVALUE}" >> "$IP_DIR"
 }
 up_config "TYPE" "Ethernet"
 up_config "BOOTPROTO" "static"
@@ -48,4 +48,4 @@ service dhcpd status
 # systemctl enable dhcpd.service
 
 ### https://it-garry.medium.com/shell-scripts-thatll-automate-software-installation-on-your-linux-server-part-ii-d3fb635fe013 ###
-### https://stackoverflow.com/questions/2464760/modify-config-file-using-bash-script/2464883#2464883 ###
+### https://stackoverflow.com/questions/2464760/modify-config-IP_DIR-using-bash-script/2464883#2464883 ###
