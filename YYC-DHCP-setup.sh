@@ -1,21 +1,22 @@
 #!/bin/bash
-# Update yum
 HNAME=/etc/hostname
 IP_DIR=/etc/sysconfig/network-scripts/ifcfg-ens33
-#DHCP_DAE=/usr/sbin/dhcpd
-#DHCP_CONF=/etc/dhcp/dhcpd.conf
+DHCP_DAE=/usr/sbin/dhcpd
+DHCP_CONF=/etc/dhcp/dhcpd.conf
 
 
 
 echo "YYC-DHCP.instantsoft.ca" > $HNAME
 #yum update -y
 
-#yum install dhcp -y
-# CONFIGURING DHCP
+yum install dhcp -y
+# CONFIGURING IP SHIT
 up_config () {
-    local TARGET_KEY ="$1"
-    local REPLACEMENT_VALUE="$2"
-    sed -c -i "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/" $IP_DIR
+    local KEY ="$1"
+    local NEWVALUE="$2"
+    local FILE=$IP_DIR
+    cat "$FILE.bak" | grep -v "^${KEY}${'='}" > "$FILE"
+    echo "${KEY}${'='}${NEWVALUE}" >> "$FILE"
 }
 up_config "TYPE" "Ethernet"
 up_config "BOOTPROTO" "static"
@@ -24,12 +25,24 @@ up_config "ONBOOT" "yes"
 echo "IPADDR=192.168.100.2" >> $IP_DIR
 echo "NETMASK=255.255.255.0" >> $IP_DIR
 echo "GATEWAY=192.168.100.1" >> $IP_DIR
-echo "DNS=192.168.100.1" >> $IP_DIR
+echo "DNS1=192.168.100.1" >> $IP_DIR
+
+systemctl restart network
+
+service start dhcpd
+#CONFIGURING DHCP SHIT
+echo "default-lease-time 600;" >> $DHCP_CONF
+echo "max-lease-time 600;" >> $DHCP_CONF
+echo "option domain-name 'instantsoft.ca';" >> $DHCP_CONF
+echo "subnet 192.168.100.0 netmask 255.255.255.0;" >> $DHCP_CONF
+echo "range 192.168.100.10 192.168.100.100;" >> $DHCP_CONF
+echo "option routers 192.168.100.1;" >> $DHCP_CONF
+echo "option domain-name-servers 192.168.100.1" >> $DHCP_CONF
+
 # Restarting Services
-# service dhcpd restart
-# service dhcpd stop
-# service dhcpd start
-# service dhcpd status
+service dhcpd restart
+service enable dhcpd
+service dhcpd status
 
 # systemctl enable dhcpd.service
 
