@@ -15,6 +15,7 @@ up_config () {
     local KEY ="$1"
     local NEWVALUE="$2"
     local FILE=$IP_DIR
+    mv "$FILE" "$FILE.bak"
     cat "$FILE.bak" | grep -v "^${KEY}${'='}" > "$FILE"
     echo "${KEY}${'='}${NEWVALUE}" >> "$FILE"
 }
